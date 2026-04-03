@@ -67,7 +67,11 @@ description: "Agent Workspace 上报 HTTP 契约：`/api/v1/report/*`，Bearer +
 
 ## 硬约束（与后端校验一致）
 
-1. **`task_id`**：`task/start` 与 `task/end` 使用**同一** ID。数据库主键为 **UUID** 类型，须传 **合法 UUID 字符串**（建议 v4）；随意字符串可能导致创建失败或查询异常。
+1. **`task_id`（UUID 规则，必读）**
+   - `task/start` 与 `task/end` 必须使用**完全相同**的 `task_id` 字符串。
+   - 服务端 `tasks.id` 为 PostgreSQL **UUID** 类型，请求体中的 `task_id` 必须是 **RFC 4122 合法 UUID 字符串**（常见形态：36 字符、`8-4-4-4-12` 段、十六进制与连字符，如 `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`）。**建议每次任务生成新的 UUID v4**（各语言均有标准库）。
+   - **禁止**使用任意业务自定义 ID（例如 `task_001`、`chat-1`、纯短数字串等）：无法写入数据库时，接口可能返回 **HTTP 500**（业务码 **5000**），而不是 400。
+   - **禁止**对同一 `task_id` 重复调用 `task/start`（主键冲突），否则同样可能 **500**；新任务必须换新 UUID。
 2. **任务生命周期**：任意一次业务任务都应 **先 `task/start` → 执行 → 再 `task/end`**；`end` 时任务须仍为「进行中」，否则 **3003**。
 3. **`task/end`**：`status` 只能是 `completed` 或 `failed`；与 `task/start` 的 `task_id` 必须对应已存在且仍为 running 的任务，否则 **3002**（不存在）。
 4. **心跳**：`status` 只能是 `working` | `idle` | `sleeping`。

@@ -35,8 +35,15 @@ Content-Type: application/json
 
 | 字段 | 必填 | 说明 |
 |------|------|------|
-| `task_id` | 是 | **须为合法 UUID 字符串**（与 PG `uuid` 主键一致） |
+| `task_id` | 是 | **须为 RFC 4122 合法 UUID 字符串**（与 PG `uuid` 主键一致；建议 v4） |
 | `type` | 是 | 自定义类型，如 `chat`、`tool` |
+
+**`task_id` 规则（与 `config.md` 一致）**
+
+- 形态示例：`550e8400-e29b-41d4-a716-446655440000`（共 36 字符，含连字符）。
+- **不要**传业务侧任意字符串（如 `task_001`）：会导致入库失败，常见为 **HTTP 500**。
+- 每个用户可见任务：**生成新 UUID** → `task/start` → 执行 → `task/end`（同一 `task_id`）。
+- **不要**对同一 `task_id` 再次 `task/start`（主键冲突，可能 500）。
 
 ```json
 {
