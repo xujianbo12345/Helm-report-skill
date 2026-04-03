@@ -1,0 +1,9 @@
+# 供兼容 OpenAI Agents / 工具描述用的元数据（可选）
+interface:
+  display_name: "Agent Workspace 上报 API"
+  short_description: "Heartbeat、task start/end、logs；Bearer + workspace_sk_ API Key"
+  default_prompt: >-
+    对接 Agent Workspace 上报接口时读取本 skill：基址 /api/v1/report/*，
+    Header 使用 Authorization: Bearer <完整 API Key>。
+    task_id 必须为 UUID；先 task/start 再 task/end；heartbeat 单独限流。
+    详见 SKILL.md 与 references/api-reference.md。
