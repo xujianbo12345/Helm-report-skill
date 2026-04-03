@@ -9,6 +9,8 @@ Authorization: Bearer workspace_sk_xxxxxxxxxxxxxxxx
 Content-Type: application/json
 ```
 
+若当前上下文中没有**正式** API Key（空、占位符、非 `workspace_sk_` 前缀），应先请用户在 Helm 控制台或 `config.md` 中提供完整密钥后再发请求；勿使用示例占位串调用。
+
 ## POST `{BASE}/report/heartbeat`
 
 **Body**

@@ -1,6 +1,6 @@
 ---
 name: agent-workspace-report-api
-description: "Agent Workspace 上报 HTTP 契约：`/api/v1/report/*`，`Authorization: Bearer <API Key>`（`workspace_sk_`）。含心跳、task/start、task/end、logs。用于实现/调试 Agent 侧客户端、对接 config.md、排障 3001/3002/3003/4000。注意 task_id 必须为 UUID；仅 heartbeat 带限流。不涉及人类 JWT（/auth、/dashboard、/agents 管理）。"
+description: "Agent Workspace 上报 HTTP 契约：`/api/v1/report/*`，Bearer + `workspace_sk_` API Key。若无有效 Key，Agent 必须先向用户索取，不得空跑请求。含心跳、task/start、task/end、logs；task_id 须 UUID；仅 heartbeat 限流。排障 3001/3002/3003/4000。不涉及 JWT 管理接口。"
 ---
 
 # Agent Workspace 上报 API
@@ -30,6 +30,26 @@ description: "Agent Workspace 上报 HTTP 契约：`/api/v1/report/*`，`Authori
 | 常见失败 | `code === 3001` → Key 无效或格式不对（HTTP **401**） |
 
 所有上报接口均需：`Content-Type: application/json`。
+
+## 缺少有效 API Key 时（Agent 必读）
+
+在发起任意 `report` 请求**之前**，须确认已拿到**正式**接入密钥；若不具备，**必须先请用户补充**，禁止用空值、占位符或猜测值调用接口。
+
+**视为「没有正式 API Key」的情况（须停手并提醒用户）**
+
+- 环境变量 / 配置 / `config.md` 中 **未提供**、为空、仅空白。
+- 仅有占位文案，例如：`your_api_key`、`xxx`、`...`、`<API_KEY>`、`changeme`、`example`、`请替换` 等。
+- 字符串 **不以 `workspace_sk_` 开头**（长度明显不对、截断、缺前缀）。
+- 用户明确表示尚未在 Helm（天枢）控制台创建 Agent 或未保存密钥。
+
+**Agent 应怎么做**
+
+1. **不要**直接调用上报接口试运气；也**不要**在对话里编造 Key。
+2. 用简短中文说明：上报需要 Helm 控制台创建的 Agent **完整 API Key**（`workspace_sk_` 开头），可从创建成功页、`config.md` 或环境变量中读取。
+3. 请用户**粘贴或配置**正式 Key 后再继续；若平台支持 AskUserQuestion 等交互，应用来收集密钥（敏感信息避免写入无关日志）。
+4. 若请求已发出且返回 **401 / `code === 3001`**：同样视为 Key 无效或过期，**提醒用户核对 Key**（是否复制完整、是否在控制台重置过），勿重复盲重试。
+
+**正式 Key 的最低检查**：非空 + 前缀 `workspace_sk_` + 总长度合理（明显过短视为无效）。
 
 ## 统一响应
 

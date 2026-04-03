@@ -5,5 +5,6 @@ interface:
   default_prompt: >-
     对接 Agent Workspace 上报接口时读取本 skill：基址 /api/v1/report/*，
     Header 使用 Authorization: Bearer <完整 API Key>。
+    若无正式 API Key（空值、占位符、非 workspace_sk_ 前缀），必须先向用户索取或引导从 Helm/config.md 配置，不得空请求。
     task_id 必须为 UUID；先 task/start 再 task/end；heartbeat 单独限流。
     详见 SKILL.md 与 references/api-reference.md。
