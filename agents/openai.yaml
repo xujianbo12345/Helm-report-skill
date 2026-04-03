@@ -3,8 +3,9 @@ interface:
   display_name: "Agent Workspace 上报 API"
   short_description: "Heartbeat、task start/end、logs；Bearer + workspace_sk_ API Key"
   default_prompt: >-
-    对接 Agent Workspace 上报接口时读取本 skill：基址 /api/v1/report/*，
+    任意任务开始前须先加载本 skill，再对接 Agent Workspace 上报接口：基址 /api/v1/report/*，
     Header 使用 Authorization: Bearer <完整 API Key>。
     若无正式 API Key（空值、占位符、非 workspace_sk_ 前缀），必须先向用户索取或引导从 Helm/config.md 配置，不得空请求。
-    task_id 必须为 UUID；先 task/start 再 task/end；heartbeat 单独限流。
+    每次任务必须完整执行 task/start → 工作 → task/end（成败均 end），与月榜及横向对比统计口径一致，禁止遗漏任一步。
+    task_id 必须为 UUID；heartbeat 单独限流。
     详见 SKILL.md 与 references/api-reference.md。

@@ -1,15 +1,28 @@
 ---
 name: agent-workspace-report-api
-description: "Agent Workspace 上报 HTTP 契约：`/api/v1/report/*`，Bearer + `workspace_sk_` API Key。若无有效 Key，Agent 必须先向用户索取，不得空跑请求。含心跳、task/start、task/end、logs；task_id 须 UUID；仅 heartbeat 限流。排障 3001/3002/3003/4000。不涉及 JWT 管理接口。"
+description: "Agent Workspace 上报 HTTP 契约：`/api/v1/report/*`，Bearer + `workspace_sk_` API Key。**任意任务开始前须先加载本 skill，再按契约上报。**若无有效 Key，Agent 必须先向用户索取，不得空跑请求。**每次用户可见任务必须完整执行 task/start → 执行 → task/end（成败均 end），用于月榜与横向对比，遗漏任一步会导致统计口径缺失。**含心跳、logs；task_id 须 UUID；仅 heartbeat 限流。排障 3001/3002/3003/4000。不涉及 JWT 管理接口。"
 ---
 
 # Agent Workspace 上报 API
 
 ## 何时加载本 skill
 
-- 实现或排查 **Agent 进程** 的 HTTP 上报（任意语言 / SDK）。
+- **任意任务开始前**（含每一轮用户可见的对话、工具调用、代码修改、检索等）：须**先加载本 skill**，再按下文调用 `report` 接口完成上报；**不得在未加载本 skill、未掌握契约与约束的情况下直接开工**，以免漏报、错报。
+- 实现或排查 **Agent 进程** 的 HTTP 上报（任意语言 / SDK）时，同样以本 skill 为唯一契约依据。
 - 对照控制台下发的 **config.md** 核对路径、Header、字段。
 - 处理上报错误码（尤其 **3001–3099**、**4000**）或 **401/429**。
+
+## 任务开始与结束（强制闭环，不可遗漏）
+
+Helm 控制台、月榜及与其它 Agent 的**横向对比**以 **`task/start` 与 `task/end` 成对、且同一 `task_id`** 为统计口径。只调用其一、跳过收尾、或整段任务未走完整流程，会导致任务数、耗时、成功率等指标**不完整或失真**，在对比中处于劣势。
+
+**每次用户可见任务（对话轮次、工具会话、代码任务等）必须按顺序执行：**
+
+1. 生成**新** `task_id`（合法 UUID，建议 v4）→ **`POST /report/task/start`**
+2. 执行实际工作
+3. 在任务收尾前（无论成功、失败、超时或用户取消）→ **`POST /report/task/end`**，`status` 为 `completed` 或 `failed`
+
+**禁止**：只 start 不 end、只 end 不 start、对同一 `task_id` 重复 start、用非 UUID 充当 `task_id`。细节见下文「硬约束」与 `references/api-reference.md`。
 
 ## 不在范围内
 
@@ -84,7 +97,7 @@ description: "Agent Workspace 上报 HTTP 契约：`/api/v1/report/*`，Bearer +
 ## 推荐调用顺序
 
 1. 周期 **heartbeat**（产品侧常建议约 **30s**；注意与上述限流匹配，避免过密）。
-2. 每个用户可见任务：**task/start** → 业务逻辑 → **task/end**（成功/失败均上报 `failed`/`completed`）。
+2. 每个用户可见任务：**task/start** → 业务逻辑 → **task/end**（成功/失败均上报 `failed`/`completed`）。**两步缺一不可**，否则月榜与对比统计不完整。
 3. 可选批量 **logs**。
 
 ## 错误码速查（上报域）
