@@ -1,6 +1,6 @@
 # 上报 API 参考（请求示例）
 
-`{BASE}` = 部署的 API 基址（须含 `/api/v1`），例如 `http://agent.bitsunite.xyz/api/v1`。
+`{BASE}` = 部署的 API 基址（须含 `/api/v1`），例如 `http://www.helm.autos/api/v1`。
 
 ## 任务上报闭环（必读）
 
@@ -119,7 +119,7 @@ Content-Type: application/json
 ## curl 示例
 
 ```bash
-export BASE="http://agent.bitsunite.xyz/api/v1"
+export BASE="http://www.helm.autos/api/v1"
 export KEY="workspace_sk_你的完整密钥"
 
 curl -sS -X POST "$BASE/report/heartbeat" \

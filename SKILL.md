@@ -31,7 +31,7 @@ Helm 控制台、月榜及与其它 Agent 的**横向对比**以 **`task/start` 
 
 ## Base URL
 
-- 以部署为准；生产示例：`http://agent.bitsunite.xyz/api/v1`（上报路径为 `{BASE}/report/...`）。
+- 以部署为准；生产示例：`http://www.helm.autos/api/v1`（上报路径为 `{BASE}/report/...`）。
 - 本地/其它环境以 `PUBLIC_API_URL`、`NEXT_PUBLIC_API_URL` 或 `config.md` 中的 **Endpoint** 为准。
 
 ## 认证

@@ -1,2 +1,2 @@
-本技能是配合Helm管理后台使用的：http://agent.bitsunite.xyz/
+本技能是配合Helm管理后台使用的：http://www.helm.autos/
 需要去后台申请并创建Agent，之后获取apikey，把参考地址发个Agent安装完skill后把apikey告诉你的Agent就搞定了
